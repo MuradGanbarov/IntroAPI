@@ -1,8 +1,10 @@
-﻿using IntroAPI.DAL;
-using IntroAPI.Entities;
-using Microsoft.AspNetCore.Http;
+﻿
+using IntroAPI.Repositories.Implementations;
+using IntroAPI.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
+using System.Linq.Expressions;
 
 namespace IntroAPI.Controllers
 {
@@ -11,17 +13,18 @@ namespace IntroAPI.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IRepository _repository;
 
-        public CategoriesController(AppDbContext context)
+        public CategoriesController(AppDbContext context,IRepository repository)
         {
             _context = context;
+            _repository = repository;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get(int page,int take=3)
         {
-            List<Category> categories = await _context.Categories.Skip((page-1)*take).Take(take).ToListAsync();
-
+            IEnumerable<Category> categories = await _repository.GetAllAsync();
             return Ok(categories);
         }
         [HttpGet("{id}")]
@@ -30,18 +33,23 @@ namespace IntroAPI.Controllers
         {
             if (id <= 0) return StatusCode(StatusCodes.Status400BadRequest);
             //return BadRequest() arxada geden proses
-            Category category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            Category category = await _repository.GetByIdAsync(id);
             if (category is null) return StatusCode(StatusCodes.Status404NotFound);
             return StatusCode(StatusCodes.Status200OK, category);
             //return Ok(category) arxa geden proses yuxarda yazilib
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Category category)
+        public async Task<IActionResult> Create([FromForm]CreateCategoryDto categoryDto)
         {
+            IQueryable<Category> db = _context.Categories;
+            Category category = new()
+            {
+                Name = categoryDto.Name,
+            };
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
-            return StatusCode(StatusCodes.Status201Created);
+            return StatusCode(StatusCodes.Status201Created,category);
         }
 
         [HttpPut("{id}")]
@@ -63,7 +71,7 @@ namespace IntroAPI.Controllers
         {
             if (id <= 0) return StatusCode(StatusCodes.Status400BadRequest);
 
-            Category existed = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            Category existed = await _context.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
 
             if (existed is null) return StatusCode(StatusCodes.Status404NotFound);
 
