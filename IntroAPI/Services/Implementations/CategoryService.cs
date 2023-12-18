@@ -41,6 +41,7 @@ namespace IntroAPI.Services.Implementations
         public async Task CreateAsync(CreateCategoryDto categoryDto)
         {
             await _repository.AddAsync(new Category { Name = categoryDto.Name });
+            await _repository.SaveChangesAsync();
         }
 
         

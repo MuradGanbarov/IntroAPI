@@ -18,7 +18,8 @@ namespace IntroAPI.Services.Implementations
         }
         public async Task CreateAsync(CreateTagDto tagDto)
         {
-            await _repository.AddAsync(new Tag { Name = tagDto.Name});
+            await _repository.AddAsync(new Tag { Name = tagDto.Name });
+            await _repository.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
