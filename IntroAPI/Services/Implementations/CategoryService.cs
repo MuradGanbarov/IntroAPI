@@ -1,4 +1,5 @@
-﻿using IntroAPI.Services.Interfaces;
+﻿using IntroAPI.Dtos.CategoryDtos;
+using IntroAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -34,8 +35,7 @@ namespace IntroAPI.Services.Implementations
 
         public async Task<GetCategoryDto> GetByIdAsync(int id)
         {
-            Category category = await _repository.GetByIdAsync(id);
-            if (category is null) throw new Exception("Not found");
+            Category category = await _repository.GetByIdAsync(id)??throw new Exception("Not found");
             return new GetCategoryDto { Id = category.Id, Name = category.Name };
         }
         public async Task CreateAsync(CreateCategoryDto categoryDto)
@@ -48,8 +48,7 @@ namespace IntroAPI.Services.Implementations
 
         public async Task DeleteAsync(int id)
         {
-            Category category = await _repository.GetByIdAsync(id);
-            if (category is null) throw new Exception("Not found");
+            Category category = await _repository.GetByIdAsync(id)??throw new Exception("Not found");
             _repository.Delete(category);
             await _repository.SaveChangesAsync();
         }
@@ -57,6 +56,7 @@ namespace IntroAPI.Services.Implementations
         public async Task Update(int id, UpdateCategoryDto updateCategoryDto)
         {
             Category category = await _repository.GetByIdAsync(id) ?? throw new Exception("Not found");
+            category.Name = updateCategoryDto.Name;
             _repository.Update(category);            
             await _repository.SaveChangesAsync();
         }

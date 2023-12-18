@@ -1,6 +1,4 @@
 ﻿
-
-
 namespace IntroAPI.Entities
 {
     public class Category : BaseEntity

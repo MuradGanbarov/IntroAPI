@@ -1,4 +1,7 @@
 ﻿
+using IntroAPI.Dtos.CategoryDtos;
+using IntroAPI.Dtos.TagDtos;
+using IntroAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,38 +11,34 @@ namespace IntroAPI.Controllers
     [ApiController]
     public class TagsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        
+        private readonly ITagService _service;
 
-        public TagsController(AppDbContext context)
+        public TagsController(ITagService service)
         {
-            _context = context;
+            _service = service;
         }
 
 
         [HttpGet]
         public async Task<IActionResult> Get(int page, int take = 3)
         {
-            List<Tag> tags = await _context.Tags.Skip((page - 1) * take).Take(take).ToListAsync();
+            var result = await _service.GetAllAsync(page,take);
 
-            return Ok(tags);
+            return Ok(result);
         }
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetById(int id)
         {
-            if (id <= 0) return StatusCode(StatusCodes.Status400BadRequest);
-            //return BadRequest() arxada geden proses
-            Tag tag = await _context.Tags.FirstOrDefaultAsync(c => c.Id == id);
-            if (tag is null) return StatusCode(StatusCodes.Status404NotFound);
-            return StatusCode(StatusCodes.Status200OK, tag);
-            //return Ok(category) arxa geden proses yuxarda yazilib
+            if (id < 0) return StatusCode(StatusCodes.Status400BadRequest);
+            return StatusCode(StatusCodes.Status200OK,await _service.GetByIdAsync(id));
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Tag tag)
+        public async Task<IActionResult> Create([FromForm]CreateTagDto tagDto)
         {
-            await _context.Tags.AddAsync(tag);
-            await _context.SaveChangesAsync();
+            await _service.CreateAsync(tagDto);
             return StatusCode(StatusCodes.Status201Created);
         }
 
@@ -47,13 +46,9 @@ namespace IntroAPI.Controllers
         public async Task<IActionResult> Update(int id, string name)
         {
             if (id <= 0) return StatusCode(StatusCodes.Status400BadRequest);
-            Tag existed = await _context.Tags.FirstOrDefaultAsync(c => c.Id == id);
-            if (existed is null) return StatusCode(StatusCodes.Status404NotFound);
-
-            existed.Name = name;
-            await _context.SaveChangesAsync();
-
+            
             return NoContent();
+
 
         }
 
@@ -61,16 +56,8 @@ namespace IntroAPI.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             if (id <= 0) return StatusCode(StatusCodes.Status400BadRequest);
-
-            Tag existed = await _context.Tags.FirstOrDefaultAsync(c => c.Id == id);
-
-            if (existed is null) return StatusCode(StatusCodes.Status404NotFound);
-
-            _context.Remove(existed);
-            await _context.SaveChangesAsync();
-
+            await _service.DeleteAsync(id);
             return NoContent();
-
         }
 
 

@@ -1,4 +1,4 @@
-﻿namespace IntroAPI.Dtos
+﻿namespace IntroAPI.Dtos.CategoryDtos
 {
     public class CreateCategoryDto
     {

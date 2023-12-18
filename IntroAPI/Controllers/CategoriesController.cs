@@ -1,4 +1,5 @@
 ﻿
+using IntroAPI.Dtos.CategoryDtos;
 using IntroAPI.Repositories.Implementations;
 using IntroAPI.Repositories.Interfaces;
 using IntroAPI.Services.Interfaces;
@@ -15,13 +16,11 @@ namespace IntroAPI.Controllers
     public class CategoriesController : ControllerBase
     {
         
-        private readonly ICategoryRepository _repository;
+        
         private readonly ICategoryService _service;
 
-        public CategoriesController(ICategoryRepository repository,ICategoryService service)
+        public CategoriesController(ICategoryService service)
         {
-            
-            _repository = repository;
             _service = service;
         }
 
@@ -56,10 +55,10 @@ namespace IntroAPI.Controllers
         }
 
         [HttpPut("{id}")] 
-        public async Task<IActionResult> Update(int id, string name)
+        public async Task<IActionResult> Update(int id,[FromForm]UpdateCategoryDto categoryDto)
         {
             if (id <= 0) return StatusCode(StatusCodes.Status400BadRequest);
-            
+            await _service.Update(id,categoryDto);
             return NoContent();
 
         }

@@ -6,7 +6,6 @@ namespace IntroAPI.Repositories.Implementations
 {
     public class Repository <T> : IRepository<T> where T : BaseEntity,new()
     {
-
         private readonly DbSet<T> _table;
         private readonly AppDbContext _context;
         public Repository(AppDbContext context)
