@@ -2,3 +2,4 @@
 global using IntroAPI.Dtos;
 global using IntroAPI.Entities;
 global using IntroAPI.Repositories.Interfaces;
+global using IntroAPI.Entities.Base;

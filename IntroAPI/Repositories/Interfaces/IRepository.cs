@@ -2,13 +2,16 @@
 
 namespace IntroAPI.Repositories.Interfaces
 {
-    public interface IRepository
+    public interface IRepository<T> where T : BaseEntity,new()
     {
-        Task<IEnumerable<Category>> GetAllAsync(Expression<Func<Category,bool>>expression=null,params string[] includes);
-        Task<Category> GetByIdAsync(int id);
-        Task AddAsync(Category category);
-        void Update(Category category);
-        void Delete(Category category);
+        IQueryable<T> GetAllAsync(Expression<Func<T,bool>>? expression=null,int skip=0,int take=0,bool isTracking=false,params string[] includes);
+        IQueryable<T> GetAllAsyncOrderBy(Expression<Func<T, object>> expressionOrder, int skip = 0, int take = 0,bool isDescending=false,bool isTracking=false,params string[] includes);
+        Task<T> GetByIdAsync(int id);
+        
+        Task AddAsync(T entity);
+        void Update(T entity);
+        void Delete(T entity);
         Task SaveChangesAsync();
     }
 }
+    

@@ -1,5 +1,7 @@
 using IntroAPI.DAL;
 using IntroAPI.Repositories.Implementations;
+using IntroAPI.Services.Implementations;
+using IntroAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace IntroAPI
@@ -19,8 +21,8 @@ namespace IntroAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddScoped(IRepository, Repository);
-            
+            builder.Services.AddScoped<ICategoryRepository,CategoryRepository>();
+            builder.Services.AddScoped<ICategoryService,CategoryService>();
             
             var app = builder.Build();
 

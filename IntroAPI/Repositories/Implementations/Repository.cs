@@ -4,60 +4,81 @@ using System.Linq.Expressions;
 
 namespace IntroAPI.Repositories.Implementations
 {
-    public class Repository : IRepository
+    public class Repository <T> : IRepository<T> where T : BaseEntity,new()
     {
-        private readonly AppDbContext _context;
 
+        private readonly DbSet<T> _table;
+        private readonly AppDbContext _context;
         public Repository(AppDbContext context)
         {
+            _table = context.Set<T>();
             _context = context;
         }
 
-
-
-
-        Task IRepository.AddAsync(Category category)
+        public async Task AddAsync(T entity)
         {
-            throw new NotImplementedException();
+            await _table.AddAsync(entity);   
         }
 
-        void IRepository.Delete(Category category)
+        public void Delete(T entity)
         {
-            throw new NotImplementedException();
+            _table.Remove(entity);
         }
 
-        Task<IEnumerable<Category>> IRepository.GetAllAsync(Expression<Func<Category, bool>> expression, params string[] includes)
+        public IQueryable<T> GetAllAsync(Expression<Func<T, bool>>? expression = null,int skip = 0, int take = 0, bool isTracking = false, params string[] includes)
         {
-            var query = _context.Categories.AsQueryable();
-            if (expression != null)
+            var query = _table.AsQueryable();
+
+            if(expression is not null) query = query.Where(expression);
+
+            if(skip != 0) query = query.Skip(skip);
+            if (take != 0) query = query.Take(take);
+
+            if(includes is not null)
             {
-                query = query.Where(expression);
+                for(int i = 0; i < includes.Length; i++)
+                {
+                    query = query.Include(includes[i]);
+                }
             }
+            return isTracking?query:query.AsNoTracking();
+        }
 
-            if (includes != null)
+        public IQueryable<T> GetAllAsyncOrderBy(Expression<Func<T, object>> expressionOrder, int skip = 0, int take = 0, bool isDescending = false, bool isTracking = false, params string[] includes)
+        {
+            var query = _table.AsQueryable();
+            
+                if (isDescending) query = query.OrderBy(expressionOrder);
+                else query = query.OrderByDescending(expressionOrder);
+            
+
+            if(skip != 0) query = query.Skip(skip);
+            if (take != 0) query = query.Take(take);
+
+            if(includes is not null)
             {
                 for (int i = 0; i < includes.Length; i++)
                 {
                     query = query.Include(includes[i]);
                 }
             }
-            return (Task<IEnumerable<Category>>)query;
+            return isTracking?query:query.AsNoTracking();
         }
 
-        Task<Category> IRepository.GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync(int id)
         {
-            Category category = _context.Categories.FirstOrDefault(c => c.Id == id);
-            return category;
+            T entity = await _table.FirstOrDefaultAsync(x => x.Id == id);
+            return entity;
         }
 
-        Task IRepository.SaveChangesAsync()
+        public async Task SaveChangesAsync()
         {
-            throw new NotImplementedException();
+            await _context.SaveChangesAsync();
         }
 
-        void IRepository.Update(Category category)
+        public void Update(T entity)
         {
-            throw new NotImplementedException();
+            _table.Update(entity);
         }
     }
 }
